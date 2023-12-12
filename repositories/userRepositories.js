@@ -10,8 +10,31 @@ async function saveUserInfos(name, email, passwordHash, image) {
   );
 }
 
+async function getUserByEmail(email) {
+  return db.query(
+    `
+    SELECT * FROM users 
+    WHERE email=$1
+    `,
+    [email]
+  );
+}
+
+async function createSession(token, id) {
+  return db.query(
+    `
+    INSERT INTO sessions 
+    (token,"userId")
+    VALUES ($1,$2)
+    `,
+    [token, id]
+  );
+}
+
 const userRepositories = {
   saveUserInfos,
+  getUserByEmail,
+  createSession,
 };
 
 export default userRepositories;

@@ -19,3 +19,25 @@ export async function signUp(req, res) {
     res.sendStatus(500);
   }
 }
+
+export async function signIn(req, res) {
+  const { password, email } = req.body;
+
+  try {
+    const queryInfoUser = await userRepositories.getUserByEmail(email);
+    if (
+      queryInfoUser.rowCount === 1 &&
+      bcrypt.compareSync(password, queryInfoUser.rows[0].password)
+    ) {
+      const token = uuid();
+      const { id } = queryInfoUser.rows[0];
+      const queryToken = await userRepositories.createSession(token, id);
+      res.status(200).send(token);
+    } else {
+      res.status(404).send("user not found");
+    }
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+}
