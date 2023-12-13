@@ -6,7 +6,7 @@ async function saveUserInfos(name, email, passwordHash, image) {
   SELECT $1,$2,$3,$4
   WHERE NOT EXISTS (SELECT email FROM users WHERE email=$2)
   `,
-    [name, email, passwordHash, image]
+    [name, email.toLowerCase(), passwordHash, image]
   );
 }
 

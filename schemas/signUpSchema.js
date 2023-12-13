@@ -12,6 +12,7 @@ const signUpSchema = joi.object({
       /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}/
     )
     .required(),
+  image: joi.string().uri().required(),
   repeatPassword: joi.string().required().valid(joi.ref("password")),
 });
 
