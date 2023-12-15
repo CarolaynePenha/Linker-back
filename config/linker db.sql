@@ -17,7 +17,7 @@ CREATE TABLE posts(
 	id serial NOT NULL PRIMARY KEY,
 	"createdAt" TIMESTAMP with time zone NOT NULL DEFAULT NOW(),
 	url text NOT NULL,
-	"description" text NOT NULL,
+	"description" text,
 	"userId"  integer NOT NULL REFERENCES "users"("id")
 );
 
