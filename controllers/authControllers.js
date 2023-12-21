@@ -29,7 +29,7 @@ export async function signIn(req, res) {
   const { password, email } = req.body;
 
   try {
-    const infoUser = await userRepositories.getUserByEmail(email);
+    const infoUser = await userRepositories.getUserByEmail(email.toLowerCase());
     if (
       infoUser.rowCount === 1 &&
       bcrypt.compareSync(password, infoUser.rows[0].password)
