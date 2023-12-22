@@ -4,6 +4,8 @@ import { validateSchema } from "../middlewares/authValidationSchema.js";
 import postSchema from "../schemas/postSchema.js";
 import tokenValidation from "../middlewares/tokenValidation.js";
 import {
+  checkLikeExist,
+  deletePost,
   getPosts,
   publishPost,
   updatePost,
@@ -26,5 +28,7 @@ timelineRouter.put(
   tokenValidation,
   updatePost
 );
+timelineRouter.delete("/timeline/:id", tokenValidation, deletePost);
+timelineRouter.post("/timeline/like/:id", tokenValidation, checkLikeExist);
 
 export default timelineRouter;
