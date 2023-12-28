@@ -54,6 +54,16 @@ async function deletePosts(id, userId) {
     [userId, id]
   );
 }
+async function DeletePostFromTableLikes(id) {
+  return db.query(
+    `DELETE FROM
+      likes 
+    WHERE 
+      "postId"=$1
+  `,
+    [id]
+  );
+}
 async function checkLike(id, userId) {
   return db.query(
     `
@@ -91,15 +101,30 @@ async function deletePostLikes(id, userId) {
   );
 }
 
+async function getLikeInfos() {
+  return db.query(
+    `
+    SELECT u.name AS name, l."userId" AS "userId",l."postId"
+    FROM 
+      likes l
+    LEFT JOIN 
+      users u ON l."userId"=u.id
+   
+  `
+  );
+}
+
 const timelineRepositories = {
   savePostsInfos,
   getPostsInfos,
   updatePostDescription,
   deletePosts,
+  DeletePostFromTableLikes,
   savePostLikes,
   checkLike,
   deletePostLikes,
   checkPostExist,
+  getLikeInfos,
 };
 
 export default timelineRepositories;

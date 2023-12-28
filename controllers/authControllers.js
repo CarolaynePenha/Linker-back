@@ -37,7 +37,7 @@ export async function signIn(req, res) {
       const token = uuid();
       const { id, name, image } = infoUser.rows[0];
       const queryToken = await userRepositories.createSession(token, id);
-      res.status(200).send({ token: token, name: name, image: image });
+      res.status(200).send({ token: token, name: name, image: image, id: id });
     } else {
       res.status(404).send("user not found");
     }

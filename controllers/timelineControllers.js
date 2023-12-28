@@ -1,5 +1,5 @@
 import timelineRepositories from "../repositories/timelineRepositories.js";
-import urlMetadata from "url-metadata";
+import getMetadata from "./metadata.js";
 
 export async function publishPost(req, res) {
   const { description, url } = req.body;
@@ -19,6 +19,10 @@ export async function publishPost(req, res) {
 export async function getPosts(req, res) {
   try {
     const { rows } = await timelineRepositories.getPostsInfos();
+
+    const queryLikeInfos = await timelineRepositories.getLikeInfos();
+    const likeInfos = queryLikeInfos.rows;
+
     const arrPosts = [];
     const { userId } = res.locals;
     for (let i = 0; i < rows.length; i++) {
@@ -33,7 +37,14 @@ export async function getPosts(req, res) {
       };
       arrPosts.push(postDatas);
     }
-    res.status(200).send(arrPosts);
+
+    const arrComplete = arrPosts.map((post) => {
+      const likedBy = likeInfos.filter((item) => post.id === item.postId);
+      const data = { ...post, likedBy };
+      return data;
+    });
+    console.dir(arrComplete, { depth: null });
+    res.status(200).send(arrComplete);
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
@@ -64,6 +75,7 @@ export async function deletePost(req, res) {
   const { id } = req.params;
   const { userId } = res.locals;
   try {
+    await timelineRepositories.DeletePostFromTableLikes(id);
     const queryDeletePost = await timelineRepositories.deletePosts(
       id,
       userId.userId
@@ -86,7 +98,6 @@ export async function checkLikeExist(req, res) {
 
   try {
     const queryPostExist = await timelineRepositories.checkPostExist(id);
-    console.log("userId", userId.userId);
     if (queryPostExist.rowCount === 1) {
       const queryCheck = await timelineRepositories.checkLike(id, userId);
       if (queryCheck.rowCount === 1) {
@@ -100,15 +111,5 @@ export async function checkLikeExist(req, res) {
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
-  }
-}
-
-async function getMetadata(url) {
-  try {
-    const metadata = await urlMetadata(url);
-    console.log("metadata: ", metadata);
-    return metadata;
-  } catch (err) {
-    console.log("fetch error:", err);
   }
 }
