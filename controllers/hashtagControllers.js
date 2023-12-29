@@ -42,3 +42,13 @@ export async function getPostByHashtag(req, res) {
     res.sendStatus(500);
   }
 }
+
+export async function getHashtagTrending(req, res) {
+  try {
+    const trending = await hashtagRepositories.getTrending();
+    res.status(200).send(trending.rows);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+}

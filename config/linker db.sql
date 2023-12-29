@@ -39,14 +39,15 @@ CREATE TABLE likes(
 CREATE TABLE hashtags(
 	id serial NOT NULL PRIMARY KEY,
 	"createdAt" TIMESTAMP with time zone NOT NULL DEFAULT NOW(),
-	name text NOT NULL
+	name text NOT NULL UNIQUE
 );
 
 CREATE TABLE "hashtagPost"(
 	id serial NOT NULL PRIMARY KEY,
 	"createdAt" TIMESTAMP with time zone NOT NULL DEFAULT NOW(),
 	"postId" integer NOT NULL REFERENCES "posts"("id"),
-	"hashtagId"  integer NOT NULL REFERENCES "hashtags"("id")
+	"hashtagId"  integer NOT NULL REFERENCES "hashtags"("id"),
+	UNIQUE ("hashtagId","postId")
 );
 
 

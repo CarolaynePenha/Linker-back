@@ -106,6 +106,25 @@ async function deletePostFromTableHashtag(hashtagId) {
   );
 }
 
+async function getTrending() {
+  return db.query(
+    `
+    SELECT COUNT  
+      ("hashtagId"), hashtags.name,hashtags.id
+    FROM 
+      "hashtagPost"
+    JOIN 
+      hashtags ON hashtags.id="hashtagPost"."hashtagId"
+    GROUP BY
+      ("hashtagId",hashtags.name,hashtags.id)
+    ORDER BY 
+      count DESC
+    LIMIT 10
+       
+      `
+  );
+}
+
 const hashtagRepositories = {
   saveHashtag,
   getHashtagId,
@@ -115,6 +134,7 @@ const hashtagRepositories = {
   deletePostFromTableHashtagPost,
   deletePostFromTableHashtag,
   existHashtagId,
+  getTrending,
 };
 
 export default hashtagRepositories;
