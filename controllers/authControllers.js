@@ -8,7 +8,6 @@ export async function signUp(req, res) {
   const passwordHash = bcrypt.hashSync(password, 10);
   try {
     const UserExist = await userRepositories.getUserByEmail(email);
-    console.log("UserExist.rowCount: ", UserExist.rowCount);
     if (UserExist.rowCount !== 0) {
       return res.status(409).send("e-mail already exists");
     }

@@ -28,7 +28,6 @@ export async function getPostsById(req, res) {
       const data = { ...post, likedBy };
       return data;
     });
-    console.dir(arrComplete, { depth: null });
     res.status(200).send(arrComplete);
   } catch (err) {
     console.error(err);

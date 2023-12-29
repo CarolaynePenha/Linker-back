@@ -4,6 +4,7 @@ async function savePostsInfos(description, url, userId) {
   return db.query(
     `INSERT INTO posts (description,url,"userId")
   VALUES ($1,$2,$3)
+  RETURNING id;
   `,
     [description, url, userId]
   );

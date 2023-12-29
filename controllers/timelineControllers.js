@@ -1,21 +1,52 @@
+import hashtagRepositories from "../repositories/hashtagRepositories.js";
 import timelineRepositories from "../repositories/timelineRepositories.js";
+
 import getMetadata from "./metadata.js";
 
 export async function publishPost(req, res) {
   const { description, url } = req.body;
   const { userId } = res.locals;
+  const hashtags = description?.match(/#\w+/g) || [];
   try {
     const queryPost = await timelineRepositories.savePostsInfos(
       description,
       url,
       userId.userId
     );
+    const postId = queryPost.rows[0].id;
+    if (hashtags) {
+      let hashtagId;
+      const arrHashtagsId = [];
+      for (let i = 0; i < hashtags.length; i++) {
+        const lookForHashtagId = await hashtagRepositories.getHashtagId(
+          hashtags[i].slice(1)
+        );
+
+        if (lookForHashtagId.rowCount === 1) {
+          hashtagId = lookForHashtagId.rows[0].id;
+          arrHashtagsId.push(hashtagId);
+        } else if (lookForHashtagId.rowCount == 0) {
+          const saveHashtag = await hashtagRepositories.saveHashtag(
+            hashtags[i].slice(1)
+          );
+          if (saveHashtag.rowCount === 1) {
+            hashtagId = saveHashtag.rows[0].id;
+            arrHashtagsId.push(hashtagId);
+          }
+        }
+      }
+      for (let i = 0; i < arrHashtagsId.length; i++) {
+        await hashtagRepositories.insertIds(arrHashtagsId[i], postId);
+      }
+    }
+
     res.sendStatus(201);
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
   }
 }
+
 export async function getPosts(req, res) {
   try {
     const { rows } = await timelineRepositories.getPostsInfos();
@@ -43,7 +74,7 @@ export async function getPosts(req, res) {
       const data = { ...post, likedBy };
       return data;
     });
-    console.dir(arrComplete, { depth: null });
+    // console.dir(arrComplete, { depth: null });
     res.status(200).send(arrComplete);
   } catch (err) {
     console.error(err);
@@ -76,6 +107,15 @@ export async function deletePost(req, res) {
   const { userId } = res.locals;
   try {
     await timelineRepositories.DeletePostFromTableLikes(id);
+    const queryHashTagId =
+      await hashtagRepositories.deletePostFromTableHashtagPost(id);
+    if (queryHashTagId.rowCount && queryHashTagId.rowCount >= 1) {
+      const hashtagId = queryHashTagId?.rows[0].hashtagId;
+      const existHashtag = await hashtagRepositories.existHashtagId(hashtagId);
+      if (existHashtag.rowCount === 0) {
+        await hashtagRepositories.deletePostFromTableHashtag(hashtagId);
+      }
+    }
     const queryDeletePost = await timelineRepositories.deletePosts(
       id,
       userId.userId
