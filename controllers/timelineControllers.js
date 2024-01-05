@@ -1,3 +1,4 @@
+import commentRepositories from "../repositories/commentRepositories.js";
 import hashtagRepositories from "../repositories/hashtagRepositories.js";
 import timelineRepositories from "../repositories/timelineRepositories.js";
 
@@ -68,13 +69,24 @@ export async function getPosts(req, res) {
       };
       arrPosts.push(postDatas);
     }
-
     const arrComplete = arrPosts.map((post) => {
       const likedBy = likeInfos.filter((item) => post.id === item.postId);
       const data = { ...post, likedBy };
       return data;
     });
     // console.dir(arrComplete, { depth: null });
+    const userComments = await commentRepositories.getUserComments();
+    let arrToSend = [];
+    if (userComments.rowCount && userComments.rowCount > 0) {
+      arrToSend = arrComplete.map((post) => {
+        const comments = userComments.rows.filter(
+          (item) => post.id === item.postId
+        );
+        const data = { ...post, comments };
+        return data;
+      });
+      return res.status(200).send(arrToSend);
+    }
     res.status(200).send(arrComplete);
   } catch (err) {
     console.error(err);
