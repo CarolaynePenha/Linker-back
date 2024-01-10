@@ -1,4 +1,5 @@
 import commentRepositories from "../repositories/commentRepositories.js";
+import followRepositories from "../repositories/followRepositories.js";
 import hashtagRepositories from "../repositories/hashtagRepositories.js";
 import timelineRepositories from "../repositories/timelineRepositories.js";
 
@@ -49,16 +50,25 @@ export async function publishPost(req, res) {
 }
 
 export async function getPosts(req, res) {
+  const { userId } = res.locals;
   try {
-    const { rows } = await timelineRepositories.getPostsInfos();
-
+    const postInfos = await timelineRepositories.getPostsInfos(userId.userId);
     const queryLikeInfos = await timelineRepositories.getLikeInfos();
     const likeInfos = queryLikeInfos.rows;
 
     const arrPosts = [];
-    const { userId } = res.locals;
-    for (let i = 0; i < rows.length; i++) {
-      const post = rows[i];
+    if (postInfos.rowCount === 0) {
+      const lookForFollowed = await followRepositories.getAllFolloweds(
+        userId.userId
+      );
+      if (lookForFollowed.rowCount === 0) {
+        return res.status(200).send("Still don't follow anyone");
+      }
+      return res.status(200).send("No posts found");
+    }
+
+    for (let i = 0; i < postInfos.rows.length; i++) {
+      const post = postInfos.rows[i];
       const metadata = await getMetadata(post.url);
       const postDatas = {
         ...post,
@@ -85,6 +95,7 @@ export async function getPosts(req, res) {
         const data = { ...post, comments };
         return data;
       });
+
       return res.status(200).send(arrToSend);
     }
     res.status(200).send(arrComplete);

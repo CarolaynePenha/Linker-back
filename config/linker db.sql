@@ -50,6 +50,11 @@ CREATE TABLE "hashtagPost"(
 	UNIQUE ("hashtagId","postId")
 );
 
-
+CREATE TABLE follow(
+	id serial NOT NULL PRIMARY KEY,
+	"createdAt" TIMESTAMP with time zone NOT NULL DEFAULT NOW(),
+	"followerId"  integer NOT NULL REFERENCES "users"("id"),
+	"followedId"  integer NOT NULL REFERENCES "users"("id")
+);
 
 

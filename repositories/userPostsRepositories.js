@@ -23,12 +23,14 @@ async function getUserPostsInfos(id) {
 async function getUserLikeInfos(id) {
   return db.query(
     `
-      SELECT u.name AS name, l."userId" AS "userId",l."postId"
-      FROM 
-        likes l
-      LEFT JOIN 
-        users u ON l."userId"=u.id
-     WHERE u.id=$1
+    SELECT u.name AS name, l."userId" AS "userId",l."postId"
+    FROM 
+      likes l
+  LEFT JOIN 
+      users u ON l."userId"=u.id
+    LEFT JOIN 
+      posts po ON po.id=l."postId"
+   WHERE po."userId"=$1
      
     `,
     [id]

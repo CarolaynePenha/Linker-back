@@ -10,23 +10,27 @@ async function savePostsInfos(description, url, userId) {
   );
 }
 
-async function getPostsInfos() {
+async function getPostsInfos(id) {
   const limit = 20;
   return db.query(
-    `SELECT p.id AS id, p."userId" AS "postUserId", p.url AS url ,p.description AS description, u.name AS name ,u.image AS image, COUNT(l."postId") AS likes 
+    `SELECT p.id AS id, p."userId" AS "postUserId", p.url AS url ,p.description AS description,
+     u.name AS name ,u.image AS image, COUNT(l."postId") AS likes 
     FROM 
       posts p
     JOIN  
       users u ON p."userId"=u.id
     LEFT JOIN 
       likes l ON l."postId"=p.id
+	 LEFT JOIN 
+	 follow f ON f."followedId"=p."userId"
+	 WHERE f."followerId"=$1
     GROUP BY
       p.id,u.name,u.image
     ORDER BY
       p."createdAt" DESC
-    LIMIT $1
+    LIMIT $2
   `,
-    [limit]
+    [id, limit]
   );
 }
 

@@ -6,6 +6,7 @@ import userRouter from "./userRouter.js";
 import SrcBarRouter from "./srcBarRouters.js";
 import hashtagRouter from "./hashtagRouters.js";
 import commentsRouter from "./commentsRouter.js";
+import followRouter from "./followRouter.js";
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.use(userRouter);
 router.use(SrcBarRouter);
 router.use(hashtagRouter);
 router.use(commentsRouter);
+router.use(followRouter);
 
 export default router;
