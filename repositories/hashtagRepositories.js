@@ -46,7 +46,7 @@ async function insertIds(hashtagId, postId) {
 async function getPostByHashtag(hashtagId) {
   const limit = 20;
   return db.query(
-    `SELECT p.id AS id, p."userId" AS "postUserId", p.url AS url ,p.description AS description, u.name AS name ,u.image AS image, h."hashtagId", COUNT(l."postId") AS likes 
+    `SELECT p.id, p."userId" AS "postUserId", p.url,p.description , u.name ,u.image, h."hashtagId", COUNT(l."postId") AS likes 
         FROM 
           posts p
         JOIN  
@@ -69,7 +69,7 @@ async function getPostByHashtag(hashtagId) {
 async function getPostLikesByHashtag(hashtagId) {
   return db.query(
     `
-      SELECT u.name AS name, l."userId" AS "userId",l."postId"
+      SELECT u.name, l."userId",l."postId"
       FROM 
         likes l
       LEFT JOIN 

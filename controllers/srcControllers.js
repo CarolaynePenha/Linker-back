@@ -9,6 +9,7 @@ export async function getSrcNames(req, res) {
     const following = await followRepositories.getAllFolloweds(userId.userId);
     let arrComplete = [];
     const followingCount = Number(following.rowCount);
+
     const arrToSend = srcNames.rows.map((srcInfos, index) => {
       if (index < followingCount) {
         return (arrComplete = { ...srcInfos, following: true });

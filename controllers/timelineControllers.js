@@ -1,6 +1,7 @@
 import commentRepositories from "../repositories/commentRepositories.js";
 import followRepositories from "../repositories/followRepositories.js";
 import hashtagRepositories from "../repositories/hashtagRepositories.js";
+import rePostRepositories from "../repositories/rePostReposotories.js";
 import timelineRepositories from "../repositories/timelineRepositories.js";
 
 import getMetadata from "./metadata.js";
@@ -53,11 +54,11 @@ export async function getPosts(req, res) {
   const { userId } = res.locals;
   try {
     const postInfos = await timelineRepositories.getPostsInfos(userId.userId);
+    const rePostInfos = await rePostRepositories.getRePosts(userId.userId);
     const queryLikeInfos = await timelineRepositories.getLikeInfos();
     const likeInfos = queryLikeInfos.rows;
-
     const arrPosts = [];
-    if (postInfos.rowCount === 0) {
+    if (postInfos.rowCount === 0 && rePostInfos.rowCount === 0) {
       const lookForFollowed = await followRepositories.getAllFolloweds(
         userId.userId
       );
@@ -66,9 +67,20 @@ export async function getPosts(req, res) {
       }
       return res.status(200).send("No posts found");
     }
-
     for (let i = 0; i < postInfos.rows.length; i++) {
       const post = postInfos.rows[i];
+      const metadata = await getMetadata(post.url);
+      const postDatas = {
+        ...post,
+        imageMetadata: metadata?.image || metadata?.jsonld["image"],
+        descriptionMetadata: metadata?.description,
+        titleMetadata: metadata?.title,
+        userId: userId.userId,
+      };
+      arrPosts.push(postDatas);
+    }
+    for (let i = 0; i < rePostInfos.rows.length; i++) {
+      const post = rePostInfos.rows[i];
       const metadata = await getMetadata(post.url);
       const postDatas = {
         ...post,
@@ -139,6 +151,7 @@ export async function deletePost(req, res) {
         await hashtagRepositories.deletePostFromTableHashtag(hashtagId);
       }
     }
+    await commentRepositories.deletePostFromTableComments(id);
     const queryDeletePost = await timelineRepositories.deletePosts(
       id,
       userId.userId

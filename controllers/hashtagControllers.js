@@ -1,3 +1,4 @@
+import commentRepositories from "../repositories/commentRepositories.js";
 import hashtagRepositories from "../repositories/hashtagRepositories.js";
 import getMetadata from "./metadata.js";
 
@@ -11,6 +12,9 @@ export async function getPostByHashtag(req, res) {
       const { rows } = await hashtagRepositories.getPostByHashtag(hashtagId);
       const queryLikeInfos = await hashtagRepositories.getPostLikesByHashtag(
         hashtagId
+      );
+      const userComments = await commentRepositories.getUserCommentsByHashtag(
+        hashtag
       );
       const likeInfos = queryLikeInfos.rows;
       const arrPosts = [];
@@ -33,6 +37,17 @@ export async function getPostByHashtag(req, res) {
         const data = { ...post, likedBy };
         return data;
       });
+      let arrToSend = [];
+      if (userComments.rowCount && userComments.rowCount > 0) {
+        arrToSend = arrComplete.map((post) => {
+          const comments = userComments.rows.filter(
+            (item) => post.id === item.postId
+          );
+          const data = { ...post, comments };
+          return data;
+        });
+        return res.status(200).send(arrToSend);
+      }
       res.status(200).send(arrComplete);
     } else {
       res.status(404).send("Not found");
