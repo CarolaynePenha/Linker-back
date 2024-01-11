@@ -32,6 +32,16 @@ async function getRePosts(id) {
   );
 }
 
+async function getCountRePosts() {
+  return db.query(
+    `SELECT "postId", COUNT("postId") AS "countRePost"
+      FROM repost
+        GROUP BY
+        "postId"
+`
+  );
+}
+
 async function deleteRePost(id) {
   return db.query(
     ` DELETE FROM repost
@@ -43,6 +53,7 @@ const rePostRepositories = {
   postRePost,
   getRePosts,
   deleteRePost,
+  getCountRePosts,
 };
 
 export default rePostRepositories;

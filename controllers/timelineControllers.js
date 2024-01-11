@@ -97,10 +97,24 @@ export async function getPosts(req, res) {
       return data;
     });
     // console.dir(arrComplete, { depth: null });
+    const count = await rePostRepositories.getCountRePosts();
+    const arrayWithCountRePost = arrComplete.map((post) => {
+      const countRePost = count.rows.filter(
+        (rePostCount) => rePostCount.postId === post.id
+      );
+      const data = {
+        ...post,
+        countRePost: countRePost.length
+          ? Number(countRePost[0].countRePost)
+          : 0,
+      };
+      return data;
+    });
+
     const userComments = await commentRepositories.getUserComments();
     let arrToSend = [];
     if (userComments.rowCount && userComments.rowCount > 0) {
-      arrToSend = arrComplete.map((post) => {
+      arrToSend = arrayWithCountRePost.map((post) => {
         const comments = userComments.rows.filter(
           (item) => post.id === item.postId
         );
@@ -110,7 +124,7 @@ export async function getPosts(req, res) {
 
       return res.status(200).send(arrToSend);
     }
-    res.status(200).send(arrComplete);
+    res.status(200).send(arrayWithCountRePost);
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
