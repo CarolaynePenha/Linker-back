@@ -110,7 +110,15 @@ export async function getPosts(req, res) {
       };
       return data;
     });
-
+    arrayWithCountRePost.sort(function (a, b) {
+      if (a.createdAt > b.createdAt) {
+        return -1;
+      }
+      if (a.createdAt < b.createdAt) {
+        return 1;
+      }
+      return 0;
+    });
     const userComments = await commentRepositories.getUserComments();
     let arrToSend = [];
     if (userComments.rowCount && userComments.rowCount > 0) {
@@ -125,6 +133,29 @@ export async function getPosts(req, res) {
       return res.status(200).send(arrToSend);
     }
     res.status(200).send(arrayWithCountRePost);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+}
+
+export async function getCountNewPost(req, res) {
+  const { postId } = req.query;
+  const { userId } = res.locals;
+  const { rePostId } = req.query;
+  try {
+    const countNewPosts = await timelineRepositories.getCountOfNewPosts(
+      userId.userId,
+      postId
+    );
+    const countNewRePosts = await rePostRepositories.getCountOfNewRePosts(
+      userId.userId,
+      rePostId
+    );
+    const count =
+      Number(countNewPosts.rows[0].count) +
+      Number(countNewRePosts.rows[0].count);
+    res.status(200).send({ count });
   } catch (err) {
     console.error(err);
     res.sendStatus(500);

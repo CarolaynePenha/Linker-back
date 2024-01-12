@@ -12,7 +12,7 @@ async function postRePost(postId, userId) {
 
 async function getRePosts(id) {
   return db.query(
-    `SELECT re.id AS "rePostId", re."userId" AS "rePostUserId",us.name AS "rePostName", p.id, p."userId" AS "postUserId",
+    `SELECT re.id AS "rePostId", re."userId" AS "rePostUserId",re."createdAt",us.name AS "rePostName", p.id, p."userId" AS "postUserId",
 	p.url,p.description , u.name,u.image, COUNT(l."postId") AS likes
 	FROM repost re
 	JOIN  
@@ -32,6 +32,27 @@ async function getRePosts(id) {
   );
 }
 
+async function getUserRePost(id) {
+  return db.query(
+    `SELECT re.id AS "rePostId", re."userId" AS "rePostUserId",us.name AS "rePostName", p.id, p."userId" AS "postUserId",
+	p.url,p.description , u.name,u.image, COUNT(l."postId") AS likes
+	FROM repost re
+	JOIN  
+      users us ON re."userId"=us.id
+	JOIN posts p  on p.id=re."postId"
+	JOIN  
+      users u ON p."userId"=u.id
+	 LEFT JOIN 
+      likes l ON l."postId"=re."postId"
+	 WHERE re."userId"=$1
+	  GROUP BY
+      re.id,p.id,l.id,u.id,us.name
+    ORDER BY
+      re."createdAt" DESC`,
+    [id]
+  );
+}
+
 async function getCountRePosts() {
   return db.query(
     `SELECT "postId", COUNT("postId") AS "countRePost"
@@ -43,9 +64,23 @@ async function getCountRePosts() {
 }
 
 async function deleteRePost(id) {
+  return (
+    db.query(
+      ` DELETE FROM repost
+          WHERE id=$1`
+    ),
+    [id]
+  );
+}
+async function getCountOfNewRePosts(id, postId) {
   return db.query(
-    ` DELETE FROM repost
-          WHERE id=4`
+    ` 
+    SELECT COUNT(re.id) FROM repost re
+    LEFT JOIN 
+	    follow f ON f."followedId"=re."userId"
+	  WHERE f."followerId"= $1
+	  AND re.id > $2`,
+    [id, postId]
   );
 }
 
@@ -54,6 +89,8 @@ const rePostRepositories = {
   getRePosts,
   deleteRePost,
   getCountRePosts,
+  getUserRePost,
+  getCountOfNewRePosts,
 };
 
 export default rePostRepositories;

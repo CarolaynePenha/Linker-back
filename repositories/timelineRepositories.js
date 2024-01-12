@@ -13,7 +13,7 @@ async function savePostsInfos(description, url, userId) {
 async function getPostsInfos(id) {
   const limit = 20;
   return db.query(
-    `SELECT p.id, p."userId" AS "postUserId", p.url,p.description,
+    `SELECT p.id,p."createdAt", p."userId" AS "postUserId", p.url,p.description,
      u.name,u.image, COUNT(l."postId") AS likes 
     FROM 
       posts p
@@ -119,6 +119,17 @@ async function getLikeInfos() {
   );
 }
 
+async function getCountOfNewPosts(id, postId) {
+  return db.query(
+    ` 
+    SELECT COUNT(p.id) FROM posts p
+    LEFT JOIN 
+	    follow f ON f."followedId"=p."userId"
+	  WHERE f."followerId"= $1
+	 AND p.id > $2`,
+    [id, postId]
+  );
+}
 const timelineRepositories = {
   savePostsInfos,
   getPostsInfos,
@@ -130,6 +141,7 @@ const timelineRepositories = {
   deletePostLikes,
   checkPostExist,
   getLikeInfos,
+  getCountOfNewPosts,
 };
 
 export default timelineRepositories;

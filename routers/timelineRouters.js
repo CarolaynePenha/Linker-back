@@ -6,6 +6,7 @@ import tokenValidation from "../middlewares/tokenValidation.js";
 import {
   checkLikeExist,
   deletePost,
+  getCountNewPost,
   getPosts,
   publishPost,
   updatePost,
@@ -22,6 +23,7 @@ timelineRouter.post(
 );
 
 timelineRouter.get("/timeline", tokenValidation, getPosts);
+timelineRouter.get("/timeline/newposts", tokenValidation, getCountNewPost);
 timelineRouter.put(
   "/timeline/:id",
   validateSchema(postSchema.descriptionSchema),

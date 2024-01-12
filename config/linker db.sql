@@ -57,4 +57,9 @@ CREATE TABLE follow(
 	"followedId"  integer NOT NULL REFERENCES "users"("id")
 );
 
-
+CREATE TABLE repost(
+	id serial NOT NULL PRIMARY KEY,
+	"createdAt" TIMESTAMP with time zone NOT NULL DEFAULT NOW(),
+	"postId"  integer NOT NULL REFERENCES "posts"("id"),
+	"userId"  integer NOT NULL REFERENCES "users"("id")
+);
