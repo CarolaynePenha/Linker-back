@@ -1,5 +1,6 @@
 import commentRepositories from "../repositories/commentRepositories.js";
 import hashtagRepositories from "../repositories/hashtagRepositories.js";
+import rePostRepositories from "../repositories/rePostReposotories.js";
 import getMetadata from "./metadata.js";
 
 export async function getPostByHashtag(req, res) {
@@ -37,9 +38,22 @@ export async function getPostByHashtag(req, res) {
         const data = { ...post, likedBy };
         return data;
       });
+      const count = await rePostRepositories.getCountRePosts();
+      const arrayWithCountRePost = arrComplete.map((post) => {
+        const countRePost = count.rows.filter(
+          (rePostCount) => rePostCount.postId === post.id
+        );
+        const data = {
+          ...post,
+          countRePost: countRePost.length
+            ? Number(countRePost[0].countRePost)
+            : 0,
+        };
+        return data;
+      });
       let arrToSend = [];
       if (userComments.rowCount && userComments.rowCount > 0) {
-        arrToSend = arrComplete.map((post) => {
+        arrToSend = arrayWithCountRePost.map((post) => {
           const comments = userComments.rows.filter(
             (item) => post.id === item.postId
           );

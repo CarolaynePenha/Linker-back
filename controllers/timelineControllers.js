@@ -52,9 +52,16 @@ export async function publishPost(req, res) {
 
 export async function getPosts(req, res) {
   const { userId } = res.locals;
+  const { page } = req.query;
   try {
-    const postInfos = await timelineRepositories.getPostsInfos(userId.userId);
-    const rePostInfos = await rePostRepositories.getRePosts(userId.userId);
+    const postInfos = await timelineRepositories.getPostsInfos(
+      userId.userId,
+      page
+    );
+    const rePostInfos = await rePostRepositories.getRePosts(
+      userId.userId,
+      page
+    );
     const queryLikeInfos = await timelineRepositories.getLikeInfos();
     const likeInfos = queryLikeInfos.rows;
     const arrPosts = [];
@@ -65,7 +72,7 @@ export async function getPosts(req, res) {
       if (lookForFollowed.rowCount === 0) {
         return res.status(200).send("Still don't follow anyone");
       }
-      return res.status(200).send("No posts found");
+      return res.status(200).send([]);
     }
     for (let i = 0; i < postInfos.rows.length; i++) {
       const post = postInfos.rows[i];
@@ -197,6 +204,7 @@ export async function deletePost(req, res) {
       }
     }
     await commentRepositories.deletePostFromTableComments(id);
+    await rePostRepositories.deletePostOnRepost(id);
     const queryDeletePost = await timelineRepositories.deletePosts(
       id,
       userId.userId

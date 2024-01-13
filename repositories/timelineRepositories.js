@@ -10,8 +10,13 @@ async function savePostsInfos(description, url, userId) {
   );
 }
 
-async function getPostsInfos(id) {
-  const limit = 20;
+async function getPostsInfos(id, page) {
+  const limit = 10;
+  let offset = 0;
+  if (page) {
+    offset = limit * page;
+  }
+
   return db.query(
     `SELECT p.id,p."createdAt", p."userId" AS "postUserId", p.url,p.description,
      u.name,u.image, COUNT(l."postId") AS likes 
@@ -28,9 +33,10 @@ async function getPostsInfos(id) {
       p.id,u.name,u.image
     ORDER BY
       p."createdAt" DESC
+    OFFSET($3)
     LIMIT $2
   `,
-    [id, limit]
+    [id, limit, offset]
   );
 }
 

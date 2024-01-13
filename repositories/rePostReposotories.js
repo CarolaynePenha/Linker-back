@@ -10,7 +10,12 @@ async function postRePost(postId, userId) {
   );
 }
 
-async function getRePosts(id) {
+async function getRePosts(id, page) {
+  const limit = 5;
+  let offset = 0;
+  if (page) {
+    offset = limit * page;
+  }
   return db.query(
     `SELECT re.id AS "rePostId", re."userId" AS "rePostUserId",re."createdAt",us.name AS "rePostName", p.id, p."userId" AS "postUserId",
 	p.url,p.description , u.name,u.image, COUNT(l."postId") AS likes
@@ -27,8 +32,11 @@ async function getRePosts(id) {
 	  GROUP BY
       re.id,f.id,p.id,l.id,u.id,us.name
     ORDER BY
-      re."createdAt" DESC`,
-    [id]
+      re."createdAt" DESC
+    OFFSET($3)
+    LIMIT $2
+      `,
+    [id, limit, offset]
   );
 }
 
@@ -72,6 +80,14 @@ async function deleteRePost(id) {
     [id]
   );
 }
+async function deletePostOnRepost(id) {
+  return db.query(
+    ` DELETE FROM repost
+          WHERE "postId"= $1
+          `,
+    [id]
+  );
+}
 async function getCountOfNewRePosts(id, postId) {
   return db.query(
     ` 
@@ -91,6 +107,7 @@ const rePostRepositories = {
   getCountRePosts,
   getUserRePost,
   getCountOfNewRePosts,
+  deletePostOnRepost,
 };
 
 export default rePostRepositories;
